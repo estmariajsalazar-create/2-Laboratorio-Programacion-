@@ -1,0 +1,382 @@
+package consola.pkg3.pkg1;
+
+import java.util.Scanner;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+
+class OperacionesMatrices {
+
+    public static double[][] sumar(double[][] A, double[][] B) {
+        if (A.length != B.length || A[0].length != B[0].length) {
+            System.out.println("Error: Las matrices deben tener las mismas dimensiones para sumarse.");
+            return null;
+        }
+        int filas = A.length;
+        int columnas = A[0].length;
+        double[][] C = new double[filas][columnas];
+
+        for (int i = 0; i < filas; i++) {
+            for (int j = 0; j < columnas; j++) {
+                C[i][j] = A[i][j] + B[i][j];
+            }
+        }
+        return C;
+    }
+
+    public static double[][] multiplicar(double[][] A, double[][] B) {
+        if (A[0].length != B.length) {
+            System.out.println("Error: El numero de columnas de A debe coincidir con el numero de filas de B.");
+            return null;
+        }
+        int filas = A.length;
+        int columnas = B[0].length;
+        int n = B.length;
+        double[][] C = new double[filas][columnas];
+
+        for (int i = 0; i < filas; i++) {
+            for (int j = 0; j < columnas; j++) {
+                for (int k = 0; k < n; k++) {
+                    C[i][j] += A[i][k] * B[k][j];
+                }
+            }
+        }
+        return C;
+    }
+
+    public static double[][] inversa(double[][] A) {
+        if (A.length != A[0].length) {
+            System.out.println("Error: La matriz debe ser cuadrada para calcular la inversa.");
+            return null;
+        }
+        int n = A.length;
+        double[][] I = new double[n][n];
+        double[][] copia = new double[n][n];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                copia[i][j] = A[i][j];
+                I[i][j] = (i == j) ? 1 : 0;
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (copia[i][i] == 0) {
+                boolean cambiado = false;
+                for (int k = i + 1; k < n; k++) {
+                    if (copia[k][i] != 0) {
+                        double[] tempFila = copia[i];
+                        copia[i] = copia[k];
+                        copia[k] = tempFila;
+
+                        double[] tempFilaI = I[i];
+                        I[i] = I[k];
+                        I[k] = tempFilaI;
+
+                        cambiado = true;
+                        break;
+                    }
+                }
+                if (!cambiado) {
+                    System.out.println("Error: La matriz no es invertible.");
+                    return null;
+                }
+            }
+
+            double pivote = copia[i][i];
+            for (int j = 0; j < n; j++) {
+                copia[i][j] /= pivote;
+                I[i][j] /= pivote;
+            }
+
+            for (int k = 0; k < n; k++) {
+                if (k != i) {
+                    double factor = copia[k][i];
+                    for (int j = 0; j < n; j++) {
+                        copia[k][j] -= factor * copia[i][j];
+                        I[k][j] -= factor * I[i][j];
+                    }
+                }
+            }
+        }
+
+        return I;
+    }
+
+    public static double[] multiplicarMatrizVector(double[][] A, double[] v) {
+        if (A[0].length != v.length) {
+            System.out.println("Error: El numero de columnas de la matriz debe coincidir con el tamaño del vector.");
+            return null;
+        }
+        int filas = A.length;
+        int columnas = A[0].length;
+        double[] resultado = new double[filas];
+
+        for (int i = 0; i < filas; i++) {
+            for (int j = 0; j < columnas; j++) {
+                resultado[i] += A[i][j] * v[j];
+            }
+        }
+        return resultado;
+    }
+
+    public static double[][] leerMatriz(Scanner sc) {
+        System.out.print("Ingrese numero de filas: ");
+        int filas = sc.nextInt();
+        System.out.print("Ingrese numero de columnas: ");
+        int columnas = sc.nextInt();
+
+        double[][] M = new double[filas][columnas];
+        System.out.println("Ingrese los elementos de la matriz:");
+        for (int i = 0; i < filas; i++) {
+            for (int j = 0; j < columnas; j++) {
+                System.out.print("Elemento [" + i + "][" + j + "]: ");
+                M[i][j] = sc.nextDouble();
+            }
+        }
+        return M;
+    }
+
+    public static double[] leerVector(Scanner sc, int size) {
+        double[] v = new double[size];
+        System.out.println("Ingrese los elementos del vector:");
+        for (int i = 0; i < size; i++) {
+            System.out.print("Elemento [" + i + "]: ");
+            v[i] = sc.nextDouble();
+        }
+        return v;
+    }
+
+    public static void imprimirMatriz(double[][] M) {
+        if (M == null) return;
+
+        for (double[] fila : M) {
+            for (double elem : fila) {
+                System.out.printf("%8.2f ", elem);
+            }
+            System.out.println();
+        }
+    }
+
+    public static void imprimirVector(double[] v) {
+        if (v == null) return;
+        for (double elem : v) {
+            System.out.printf("%8.2f ", elem);
+        }
+        System.out.println();
+    }
+}
+
+class Persona {
+    String cedula;
+    String nombre;
+    double estatura;
+    int edad;
+
+    public Persona(String cedula, String nombre, double estatura, int edad) {
+        this.cedula = cedula;
+        this.nombre = nombre;
+        this.estatura = estatura;
+        this.edad = edad;
+    }
+
+    @Override
+    public String toString() {
+        return nombre + " - Cédula: " + cedula + " - Estatura: " + estatura + " - Edad: " + edad;
+    }
+}
+
+class PersonaGUI extends JFrame {
+    private DefaultListModel<Persona> modeloLista;
+    private final JList<Persona> lista;
+    private JTextField txtCedula, txtNombre, txtEstatura, txtEdad;
+    private JComboBox<String> comboCriterio, comboMetodo;
+
+    public PersonaGUI() {
+        setTitle("Gestión de Personas");
+        setSize(600, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        modeloLista = new DefaultListModel<>();
+        lista = new JList<>(modeloLista);
+
+        JPanel panelFormulario = new JPanel(new GridLayout(5, 2));
+        panelFormulario.add(new JLabel("Cédula:"));
+        txtCedula = new JTextField();
+        panelFormulario.add(txtCedula);
+
+        panelFormulario.add(new JLabel("Nombre:"));
+        txtNombre = new JTextField();
+        panelFormulario.add(txtNombre);
+
+        panelFormulario.add(new JLabel("Estatura:"));
+        txtEstatura = new JTextField();
+        panelFormulario.add(txtEstatura);
+
+        panelFormulario.add(new JLabel("Edad:"));
+        txtEdad = new JTextField();
+        panelFormulario.add(txtEdad);
+
+        JButton btnAgregar = new JButton("Agregar Persona");
+        panelFormulario.add(btnAgregar);
+
+        add(panelFormulario, BorderLayout.NORTH);
+        add(new JScrollPane(lista), BorderLayout.CENTER);
+
+        JPanel panelOpciones = new JPanel();
+        comboCriterio = new JComboBox<>(new String[]{"Estatura", "Edad"});
+        comboMetodo = new JComboBox<>(new String[]{"Burbuja", "MergeSort"});
+        JButton btnOrdenar = new JButton("Ordenar");
+        panelOpciones.add(new JLabel("Criterio:"));
+        panelOpciones.add(comboCriterio);
+        panelOpciones.add(new JLabel("Método:"));
+        panelOpciones.add(comboMetodo);
+        panelOpciones.add(btnOrdenar);
+
+        add(panelOpciones, BorderLayout.SOUTH);
+
+        // Acción Agregar
+        btnAgregar.addActionListener((ActionEvent e) -> {
+            try {
+                String cedula = txtCedula.getText();
+                String nombre = txtNombre.getText();
+                double estatura = Double.parseDouble(txtEstatura.getText());
+                int edad = Integer.parseInt(txtEdad.getText());
+                Persona p = new Persona(cedula, nombre, estatura, edad);
+                modeloLista.addElement(p);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Error al ingresar datos.");
+            }
+        });
+
+        // Acción Ordenar
+        btnOrdenar.addActionListener((ActionEvent e) -> {
+            Persona[] personas = new Persona[modeloLista.size()];
+            modeloLista.copyInto(personas);
+            
+            String criterio = (String) comboCriterio.getSelectedItem();
+            String metodo = (String) comboMetodo.getSelectedItem();
+            
+            if (metodo.equals("Burbuja")) {
+                ordenarBurbuja(personas, criterio);
+            } else {
+                personas = mergeSort(personas, criterio);
+            }
+            
+            modeloLista.clear();
+            for (Persona p : personas) {
+                modeloLista.addElement(p);
+            }
+        });
+    }
+
+    private void ordenarBurbuja(Persona[] arr, String criterio) {
+        for (int i = 0; i < arr.length - 1; i++) {
+            for (int j = 0; j < arr.length - i - 1; j++) {
+                if (comparar(arr[j], arr[j + 1], criterio) < 0) {
+                    Persona temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+                }
+            }
+        }
+    }
+
+    private Persona[] mergeSort(Persona[] arr, String criterio) {
+        if (arr.length <= 1) return arr;
+        int mid = arr.length / 2;
+        Persona[] left = new Persona[mid];
+        Persona[] right = new Persona[arr.length - mid];
+        System.arraycopy(arr, 0, left, 0, mid);
+        System.arraycopy(arr, mid, right, 0, arr.length - mid);
+
+        left = mergeSort(left, criterio);
+        right = mergeSort(right, criterio);
+
+        return merge(left, right, criterio);
+    }
+
+    private Persona[] merge(Persona[] left, Persona[] right, String criterio) {
+        Persona[] result = new Persona[left.length + right.length];
+        int i = 0, j = 0, k = 0;
+        while (i < left.length && j < right.length) {
+            if (comparar(left[i], right[j], criterio) >= 0) {
+                result[k++] = left[i++];
+            } else {
+                result[k++] = right[j++];
+            }
+        }
+        while (i < left.length) result[k++] = left[i++];
+        while (j < right.length) result[k++] = right[j++];
+        return result;
+    }
+
+    private int comparar(Persona p1, Persona p2, String criterio) {
+        if (criterio.equals("Estatura")) {
+            return Double.compare(p1.estatura, p2.estatura);
+        } else {
+            return Integer.compare(p1.edad, p2.edad);
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        try (Scanner sc = new Scanner(System.in)) {
+            int opcion;
+            
+            do {
+                System.out.println("\t MENU \t");
+                System.out.println("1. Suma de matrices");
+                System.out.println("2. Producto de matrices");
+                System.out.println("3. Inversa de una matriz");
+                System.out.println("4. Producto de una matriz por un vector");
+                System.out.println("5. Abrir GUI Personas");
+                System.out.println("0. Salir");
+                System.out.print("Seleccione opcion: ");
+                opcion = sc.nextInt();
+                
+                switch (opcion) {
+                    case 1 -> {
+                        System.out.println("Matriz A:");
+                        double[][] A = OperacionesMatrices.leerMatriz(sc);
+                        System.out.println("Matriz B:");
+                        double[][] B = OperacionesMatrices.leerMatriz(sc);
+                        System.out.println("Resultado de A+B:");
+                        OperacionesMatrices.imprimirMatriz(OperacionesMatrices.sumar(A, B));
+                    }
+                    case 2 -> {
+                        System.out.println("Matriz A:");
+                        double[][] C = OperacionesMatrices.leerMatriz(sc);
+                        System.out.println("Matriz B:");
+                        double[][] D = OperacionesMatrices.leerMatriz(sc);
+                        System.out.println("Resultado de A*B:");
+                        OperacionesMatrices.imprimirMatriz(OperacionesMatrices.multiplicar(C, D));
+                    }
+                    case 3 -> {
+                        System.out.println("Matriz (cuadrada):");
+                        double[][] E = OperacionesMatrices.leerMatriz(sc);
+                        System.out.println("Inversa de la matriz:");
+                        OperacionesMatrices.imprimirMatriz(OperacionesMatrices.inversa(E));
+                    }
+                    case 4 -> {
+                        System.out.println("Matriz A:");
+                        double[][] F = OperacionesMatrices.leerMatriz(sc);
+                        System.out.println("Vector:");
+                        double[] v = OperacionesMatrices.leerVector(sc, F[0].length);
+                        System.out.println("Resultado de A*v:");
+                        OperacionesMatrices.imprimirVector(OperacionesMatrices.multiplicarMatrizVector(F, v));
+                    }
+                    case 5 -> {
+                        SwingUtilities.invokeLater(() -> new PersonaGUI().setVisible(true));
+                    }
+                    case 0 -> System.out.println("Saliendo...");
+                    default -> System.out.println("Opcion invalida");
+                }
+                
+            } while (opcion != 0);
+        }
+    }
+}
